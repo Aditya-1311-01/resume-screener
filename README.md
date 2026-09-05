@@ -1,4 +1,4 @@
-# Resume Screener
+# AI Powered Resume Screener
 
 Everything lives in a single folder now:
 
