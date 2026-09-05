@@ -1,4 +1,4 @@
-# Resume Screener — one folder, VS Code
+# Resume Screener
 
 Everything lives in a single folder now:
 
