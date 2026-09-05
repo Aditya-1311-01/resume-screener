@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Shortlist — resume screening</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #FAFAF8;
+    --surface: #FFFFFF;
+    --ink: #171B21;
+    --muted: #5B6470;
+    --border: #E2E4E8;
+    --accent: #1F6F5E;
+    --accent-soft: #E7F1EE;
+    --highlight: #C6801A;
+    --highlight-soft: #FBF0DF;
+    --danger: #B3432B;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'IBM Plex Sans', sans-serif;
+    line-height: 1.5;
+  }
+
+  h1, h2, h3, .rank-num {
+    font-family: 'Space Grotesk', sans-serif;
+  }
+
+  .shell {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 48px 24px 96px;
+  }
+
+  header.page-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 40px;
+    flex-wrap: wrap;
+  }
+
+  header.page-head h1 {
+    font-size: 28px;
+    font-weight: 600;
+    margin: 0;
+    letter-spacing: -0.01em;
+  }
+
+  header.page-head p {
+    margin: 4px 0 0;
+    color: var(--muted);
+    font-size: 14px;
+    max-width: 46ch;
+  }
+
+  .layout {
+    display: grid;
+    grid-template-columns: 380px 1fr;
+    gap: 40px;
+    align-items: start;
+  }
+
+  @media (max-width: 860px) {
+    .layout { grid-template-columns: 1fr; }
+  }
+
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 28px;
+  }
+
+  .panel h2 {
+    font-size: 15px;
+    font-weight: 600;
+    margin: 0 0 20px;
+    text-transform: none;
+  }
+
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 8px;
+    color: var(--ink);
+  }
+
+  .field { margin-bottom: 22px; }
+
+  textarea {
+    width: 100%;
+    min-height: 220px;
+    resize: vertical;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    padding: 12px 14px;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 13.5px;
+    color: var(--ink);
+  }
+
+  textarea:focus, input:focus, .dropzone:focus-within {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+  }
+
+  .dropzone {
+    border: 1px dashed var(--border);
+    background: var(--bg);
+    padding: 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.15s ease;
+  }
+
+  .dropzone.drag-over {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+  }
+
+  .dropzone input[type="file"] { display: none; }
+
+  .dropzone .dz-label {
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  .dropzone .dz-label strong {
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  .file-list {
+    list-style: none;
+    margin: 14px 0 0;
+    padding: 0;
+    font-size: 13px;
+    color: var(--ink);
+  }
+
+  .file-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    border-top: 1px solid var(--border);
+  }
+
+  .file-list button {
+    border: none;
+    background: none;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 13px;
+  }
+
+  .file-list button:hover { color: var(--danger); }
+
+  button.primary {
+    width: 100%;
+    background: var(--ink);
+    color: #fff;
+    border: none;
+    padding: 13px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: 'IBM Plex Sans', sans-serif;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+
+  button.primary:hover:not(:disabled) { background: var(--accent); }
+
+  button.primary:disabled {
+    background: var(--border);
+    color: var(--muted);
+    cursor: not-allowed;
+  }
+
+  .status-line {
+    margin-top: 14px;
+    font-size: 13px;
+    color: var(--muted);
+    min-height: 18px;
+  }
+
+  .status-line.error { color: var(--danger); }
+
+  .results-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 18px;
+  }
+
+  .results-head h2 { font-size: 15px; font-weight: 600; margin: 0; }
+  .results-head span { font-size: 13px; color: var(--muted); }
+
+  .empty-state {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    padding: 60px 32px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 14px;
+  }
+
+  .candidate {
+    display: grid;
+    grid-template-columns: 56px 1fr auto;
+    gap: 20px;
+    padding: 22px 0;
+    border-top: 1px solid var(--border);
+    align-items: start;
+  }
+
+  .candidate:first-child { border-top: none; }
+
+  .rank-num {
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--border);
+    line-height: 1;
+  }
+
+  .candidate.top-rank .rank-num { color: var(--highlight); }
+
+  .cand-main h3 {
+    font-size: 16px;
+    margin: 0 0 2px;
+    font-weight: 600;
+  }
+
+  .cand-main .filename {
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+
+  .verdict {
+    font-size: 13.5px;
+    color: var(--ink);
+    margin: 0 0 14px;
+    max-width: 62ch;
+  }
+
+  .skill-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 8px;
+  }
+
+  .skill-row .row-label {
+    font-size: 11.5px;
+    color: var(--muted);
+    width: 100%;
+    margin-bottom: 4px;
+  }
+
+  .chip {
+    font-size: 12px;
+    padding: 3px 9px;
+    border: 1px solid var(--border);
+  }
+
+  .chip.match { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+  .chip.missing { background: #FBEAE5; border-color: var(--danger); color: var(--danger); }
+
+  .score-block {
+    text-align: right;
+    min-width: 88px;
+  }
+
+  .score-block .score {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 28px;
+    font-weight: 700;
+  }
+
+  .score-block .score-label {
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .error-row {
+    padding: 16px 0;
+    border-top: 1px solid var(--border);
+    font-size: 13px;
+    color: var(--danger);
+  }
+
+  .job-summary {
+    margin-top: 28px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+    font-size: 12.5px;
+    color: var(--muted);
+  }
+
+  .job-summary strong { color: var(--ink); }
+</style>
+</head>
+<body>
+  <div class="shell">
+    <header class="page-head">
+      <div>
+        <h1>Shortlist</h1>
+        <p>Paste a job description, drop in a batch of resumes, and get every candidate ranked with a plain-language verdict.</p>
+      </div>
+    </header>
+
+    <div class="layout">
+      <form class="panel" id="screen-form">
+        <h2>1. Job description</h2>
+        <div class="field">
+          <label for="job-desc">Paste the full job posting</label>
+          <textarea id="job-desc" placeholder="Paste the job description here..." required></textarea>
+        </div>
+
+        <h2>2. Resumes</h2>
+        <div class="field">
+          <div class="dropzone" id="dropzone" tabindex="0">
+            <input type="file" id="file-input" accept=".pdf,.docx" multiple />
+            <div class="dz-label"><strong>Choose files</strong> or drag PDFs / DOCX here</div>
+          </div>
+          <ul class="file-list" id="file-list"></ul>
+        </div>
+
+        <button type="submit" class="primary" id="submit-btn">Screen candidates</button>
+        <div class="status-line" id="status-line"></div>
+      </form>
+
+      <section>
+        <div class="results-head">
+          <h2>Ranked candidates</h2>
+          <span id="result-count"></span>
+        </div>
+        <div id="results-area">
+          <div class="empty-state">Results will appear here once you run a screening.</div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+<script>
+  // Local dev default. After deploying the backend (e.g. to Render),
+  // replace this with your live backend URL, such as:
+  // "https://your-app-name.onrender.com/api/screen"
+  const API_URL = "http://localhost:8000/api/screen";
+
+  const form = document.getElementById("screen-form");
+  const jobDescEl = document.getElementById("job-desc");
+  const dropzone = document.getElementById("dropzone");
+  const fileInput = document.getElementById("file-input");
+  const fileListEl = document.getElementById("file-list");
+  const submitBtn = document.getElementById("submit-btn");
+  const statusLine = document.getElementById("status-line");
+  const resultsArea = document.getElementById("results-area");
+  const resultCount = document.getElementById("result-count");
+
+  let selectedFiles = [];
+
+  dropzone.addEventListener("click", () => fileInput.click());
+  dropzone.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === " ") fileInput.click();
+  });
+
+  ["dragover", "dragenter"].forEach(evt =>
+    dropzone.addEventListener(evt, (e) => {
+      e.preventDefault();
+      dropzone.classList.add("drag-over");
+    })
+  );
+  ["dragleave", "drop"].forEach(evt =>
+    dropzone.addEventListener(evt, (e) => {
+      e.preventDefault();
+      dropzone.classList.remove("drag-over");
+    })
+  );
+  dropzone.addEventListener("drop", (e) => {
+    addFiles(e.dataTransfer.files);
+  });
+  fileInput.addEventListener("change", (e) => {
+    addFiles(e.target.files);
+    fileInput.value = "";
+  });
+
+  function addFiles(fileListLike) {
+    const incoming = Array.from(fileListLike).filter(f =>
+      /\.(pdf|docx)$/i.test(f.name)
+    );
+    const existingNames = new Set(selectedFiles.map(f => f.name));
+    incoming.forEach(f => {
+      if (!existingNames.has(f.name)) selectedFiles.push(f);
+    });
+    renderFileList();
+  }
+
+  function removeFile(name) {
+    selectedFiles = selectedFiles.filter(f => f.name !== name);
+    renderFileList();
+  }
+
+  function renderFileList() {
+    fileListEl.innerHTML = "";
+    selectedFiles.forEach(f => {
+      const li = document.createElement("li");
+      const span = document.createElement("span");
+      span.textContent = f.name;
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.textContent = "Remove";
+      btn.addEventListener("click", () => removeFile(f.name));
+      li.appendChild(span);
+      li.appendChild(btn);
+      fileListEl.appendChild(li);
+    });
+  }
+
+  function setStatus(message, isError = false) {
+    statusLine.textContent = message;
+    statusLine.classList.toggle("error", isError);
+  }
+
+  function escapeHtml(str) {
+    if (str === null || str === undefined) return "";
+    return String(str)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
+  }
+
+  function renderResults(payload) {
+    const candidates = payload.candidates || [];
+    resultCount.textContent = candidates.length
+      ? `${candidates.length} candidate${candidates.length > 1 ? "s" : ""}`
+      : "";
+
+    if (!candidates.length) {
+      resultsArea.innerHTML = `<div class="empty-state">No candidates were returned.</div>`;
+      return;
+    }
+
+    resultsArea.innerHTML = "";
+    candidates.forEach((c, idx) => {
+      if (c.error) {
+        const row = document.createElement("div");
+        row.className = "error-row";
+        row.textContent = `${c.filename}: ${c.error}`;
+        resultsArea.appendChild(row);
+        return;
+      }
+
+      const details = c.details || {};
+      const matching = details.matching_skills || details.matched_skills || [];
+      const missing = details.missing_skills || details.missing_important_skills || [];
+      const verdict = details.final_verdict || details.verdict || "";
+      const expMet = details.experience_requirement_met ?? details.experience_met;
+
+      const row = document.createElement("div");
+      row.className = "candidate" + (idx === 0 ? " top-rank" : "");
+      row.innerHTML = `
+        <div class="rank-num">${idx + 1}</div>
+        <div class="cand-main">
+          <h3>${escapeHtml(c.name) || "Unnamed candidate"}</h3>
+          <div class="filename">${escapeHtml(c.filename)}${
+            expMet !== undefined ? ` · Experience requirement ${expMet ? "met" : "not met"}` : ""
+          }</div>
+          ${verdict ? `<p class="verdict">${escapeHtml(verdict)}</p>` : ""}
+          ${matching.length ? `
+            <div class="skill-row">
+              <span class="row-label">Matching skills</span>
+              ${matching.map(s => `<span class="chip match">${escapeHtml(s)}</span>`).join("")}
+            </div>` : ""}
+          ${missing.length ? `
+            <div class="skill-row">
+              <span class="row-label">Missing skills</span>
+              ${missing.map(s => `<span class="chip missing">${escapeHtml(s)}</span>`).join("")}
+            </div>` : ""}
+        </div>
+        <div class="score-block">
+          <div class="score">${Math.round(c.score)}</div>
+          <div class="score-label">Match %</div>
+        </div>
+      `;
+      resultsArea.appendChild(row);
+    });
+
+    if (payload.job) {
+      const j = payload.job;
+      const summary = document.createElement("div");
+      summary.className = "job-summary";
+      summary.innerHTML = `<strong>Parsed role:</strong> ${escapeHtml(j.role || "—")}` +
+        (j.minimum_experience ? ` · <strong>Min. experience:</strong> ${j.minimum_experience} yrs` : "");
+      resultsArea.appendChild(summary);
+    }
+  }
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    if (!jobDescEl.value.trim()) {
+      setStatus("Paste a job description first.", true);
+      return;
+    }
+    if (!selectedFiles.length) {
+      setStatus("Add at least one resume (PDF or DOCX).", true);
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("job_description", jobDescEl.value.trim());
+    selectedFiles.forEach(f => formData.append("resumes", f));
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Screening...";
+    setStatus(`Processing ${selectedFiles.length} resume(s) — this can take a minute.`);
+    resultsArea.innerHTML = `<div class="empty-state">Screening in progress...</div>`;
+
+    try {
+      const response = await fetch(API_URL, {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errBody = await response.json().catch(() => ({}));
+        throw new Error(errBody.detail || `Request failed with status ${response.status}`);
+      }
+
+      const data = await response.json();
+      renderResults(data);
+      setStatus("Done.");
+    } catch (err) {
+      console.error(err);
+      setStatus(
+        err.message.includes("fetch")
+          ? "Could not reach the backend. Is it running on localhost:8000?"
+          : err.message,
+        true
+      );
+      resultsArea.innerHTML = `<div class="empty-state">Screening failed. See the message above.</div>`;
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Screen candidates";
+    }
+  });
+</script>
+</body>
+</html>
